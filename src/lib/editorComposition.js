@@ -85,9 +85,9 @@ export async function prepareEditorComposition(d, { exportSettings, exportRange,
     voiceAudioSegments: [
       ...voiceAudioSegments,
       ...(d.sourceAudioBlob && embeddedVideoAudio.blob
-        ? embeddedVideoAudio.segments.map((segment) => ({ ...segment, blob: embeddedVideoAudio.blob, volume: 1, sourceKind: "embedded-source" }))
+        ? embeddedVideoAudio.segments.map((segment) => ({ ...segment, blob: embeddedVideoAudio.blob, volume: segment.volume ?? 1, sourceKind: "embedded-source" }))
         : []),
-      ...overlayAudio.segments.map((segment) => ({ ...segment, blob: overlayAudio.blob, volume: 1, sourceKind: "embedded-overlay" })),
+      ...overlayAudio.segments.map((segment) => ({ ...segment, blob: overlayAudio.blob, volume: segment.volume ?? 1, sourceKind: "embedded-overlay" })),
     ],
     voiceVolume: d.volume,
     sourceAudioBlob: exportSourceAudioBlob, sourceAudioVolume: d.sourceAudioBlob ? d.sourceAudioVolume : 1,

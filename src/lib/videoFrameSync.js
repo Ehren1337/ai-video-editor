@@ -66,8 +66,16 @@ function applyLatestSeek(video, state) {
   };
   const onSeeked = () => {
     if (state.version !== version || finished) return;
+    // Decoder completion and compositor confirmation are separate signals.
+    // Paused/same-frame seeks may never produce another video-frame callback;
+    // do not hold subsequent scrub targets behind that optional notification.
+    // Retain the observer for the final exact PTS until a newer seek starts.
+    if (!video.seeking && video.readyState >= 2) {
+      state.active = null;
+      scheduleLatestSeek(video, state);
+    }
     // Same-frame seeks need not emit another rVFC. Allow two compositor frames
-    // before unlocking the queue, but never report requested currentTime as a
+    // to reconcile the final PTS, but never report requested currentTime as a
     // confirmed PTS. Keep observing a late final frame if nothing is pending.
     if (state.fallbackFrame) window.cancelAnimationFrame(state.fallbackFrame);
     state.fallbackFrame = window.requestAnimationFrame(() => {
@@ -132,6 +140,9 @@ export function requestLatestVideoFrame(video, targetTime, options = {}) {
     applyLatestSeek(video, state);
   } else {
     // Finish an in-flight decode before jumping straight to the latest target.
+    // The decoder may already be idle without a new seeked/rVFC event (for
+    // example after a same-frame seek). New pointer input must still advance.
+    if (state.active && !video.seeking && video.readyState >= 2) state.active = null;
     scheduleLatestSeek(video, state);
   }
 }

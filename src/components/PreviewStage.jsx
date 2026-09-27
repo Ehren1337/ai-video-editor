@@ -14,6 +14,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 
+import { requestTimelineMediaPlay, setTimelineAudioGain } from "../lib/editorRuntime.js";
 import { formatTime } from "../lib/timeline.js";
 import { getVisualMaskInsets, getVisualMaskSvgDataUrl, getVisualSourceTime, getVisualPlaybackRateAtTime, resolveVisualTransform, snapVisualScaleToFrameEdges } from "../lib/visualEffects.js";
 import { resolveVisualClipAnimation } from "../lib/visualClipAnimations.js";
@@ -85,7 +86,8 @@ function VisualOverlayMedia({ overlay, src, style, isPlaying, localTime }) {
       if (Number.isFinite(video.duration) && Math.abs(video.currentTime - sourceTime) > (isPlaying ? 0.12 : 0.001)) {
         video.currentTime = Math.min(sourceTime, Math.max(0, video.duration - 0.01));
       }
-      if (isPlaying) video.play().catch(() => {});
+      setTimelineAudioGain(video, overlay.volume ?? 1);
+      if (isPlaying) requestTimelineMediaPlay(video);
       else video.pause();
     };
     video.addEventListener("loadedmetadata", sync);
