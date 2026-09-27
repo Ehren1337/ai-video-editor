@@ -1,3 +1,4 @@
+import { CaptionGroupingControl } from "./CaptionGroupingControl.jsx";
 import {
   Armchair,
   ArrowCounterClockwise,
@@ -582,6 +583,7 @@ function CaptionContextPanel({
   audioSegments,
   setCaptionSegments,
 }) {
+  const [captionGrouping, setCaptionGrouping] = useState("phrases");
   const srtInputRef = useRef(null);
   const focusNewCaptionRef = useRef(false);
   const [pendingSrt, setPendingSrt] = useState(null);
@@ -782,23 +784,26 @@ function CaptionContextPanel({
       </div>
 
       {!captionSegments.length ? (
-        <button
-          className="audio-entry-card caption-entry-card"
-          type="button"
-          disabled={!sourceAudioBlob || isGeneratingCaptions}
-          onClick={generateCaptionsFromSourceAudio}
-        >
-          <ClosedCaptioning size={24} weight="duotone" />
-          <span>
-            <strong>{isGeneratingCaptions ? t("autoCaptionsRunning") : t("autoCaptionsTitle")}</strong>
-            <em>{sourceAudioBlob ? t("autoCaptionsDesc") : t("autoCaptionsNeedsSource")}</em>
-          </span>
-          {isGeneratingCaptions ? (
-            <span className="inline-progress" aria-hidden="true">
-              <span style={{ width: `${automaticCaptionProgress}%` }} />
+        <>
+          <CaptionGroupingControl value={captionGrouping} onChange={setCaptionGrouping} disabled={isGeneratingCaptions} t={t} />
+          <button
+            className="audio-entry-card caption-entry-card"
+            type="button"
+            disabled={!sourceAudioBlob || isGeneratingCaptions}
+            onClick={() => generateCaptionsFromSourceAudio({ grouping: captionGrouping })}
+          >
+            <ClosedCaptioning size={24} weight="duotone" />
+            <span>
+              <strong>{isGeneratingCaptions ? t("autoCaptionsRunning") : t("autoCaptionsTitle")}</strong>
+              <em>{sourceAudioBlob ? t("autoCaptionsDesc") : t("autoCaptionsNeedsSource")}</em>
             </span>
-          ) : null}
-        </button>
+            {isGeneratingCaptions ? (
+              <span className="inline-progress" aria-hidden="true">
+                <span style={{ width: `${automaticCaptionProgress}%` }} />
+              </span>
+            ) : null}
+          </button>
+        </>
       ) : null}
 
       <div className="caption-context-heading">

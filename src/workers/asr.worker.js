@@ -1,4 +1,4 @@
-import { AUTOMATIC_CAPTION_MODEL_ID, AUTOMATIC_CAPTION_MODEL_LABEL } from "../config/models.js";
+import { AUTOMATIC_CAPTION_MODEL_ID, AUTOMATIC_CAPTION_MODEL_LABEL, AUTOMATIC_CAPTION_MODEL_REVISION } from "../config/models.js";
 
 const ASR_SAMPLE_RATE = 16000;
 const LANGUAGE_DETECTION_SECONDS = 20;
@@ -138,6 +138,7 @@ async function createTranscriber(requestId, device) {
   env.useBrowserCache = false;
   return pipeline("automatic-speech-recognition", AUTOMATIC_CAPTION_MODEL_ID, {
     dtype: "q8",
+    revision: AUTOMATIC_CAPTION_MODEL_REVISION,
     device,
     progress_callback: createModelLoadProgressCallback(requestId),
   });
@@ -266,7 +267,7 @@ async function transcribe({ requestId, audioBuffer, preferredLanguage, modelId }
     no_repeat_ngram_size: 3,
     repetition_penalty: 1.15,
     stride_length_s: 5,
-    return_timestamps: true,
+    return_timestamps: "word",
   };
   if (isMultilingualWhisper(transcriber)) {
     transcriptionOptions.language = languageResult.language;

@@ -272,7 +272,10 @@ export function reorderTimelineItems(items, fromIndex, toIndex) {
 
 export function moveTimedCaptionSegment(segments, segmentId, start, end) {
   const safeStart = Math.max(0, Number(start) || 0);
-  const safeEnd = Math.max(safeStart + MIN_TIMED_CAPTION_SECONDS, Number(end) || safeStart);
+  const source = segments.find((segment) => segment.id === segmentId);
+  const minimum = hasExplicitCaptionTiming(source)
+    ? Math.min(MIN_TIMED_CAPTION_SECONDS, source.end - source.start) : MIN_TIMED_CAPTION_SECONDS;
+  const safeEnd = Math.max(safeStart + minimum, Number(end) || safeStart);
   return segments.map((segment) =>
     segment.id === segmentId ? { ...segment, start: safeStart, end: safeEnd } : segment,
   );
@@ -333,7 +336,8 @@ export function getCaptionBaseDuration(text) {
 
 export function getCaptionSegmentDuration(segment) {
   if (hasExplicitCaptionTiming(segment)) {
-    return Math.max(MIN_TIMED_CAPTION_SECONDS, segment.end - segment.start);
+    // Explicit speech/SRT timing is authoritative, even for words under 200ms.
+    return segment.end - segment.start;
   }
 
   const defaultWeight = getCaptionDefaultWeight(segment.text);
@@ -353,7 +357,7 @@ export function getCaptionTimeline(captionSegments, targetDuration = 0) {
       const hasTiming = hasExplicitCaptionTiming(segment);
       const start = hasTiming ? Math.max(0, segment.start) : cursor;
       const duration = hasTiming
-        ? Math.max(MIN_TIMED_CAPTION_SECONDS, segment.end - segment.start)
+        ? segment.end - segment.start
         : getCaptionSegmentDuration(segment);
       const timelineItem = {
         start,

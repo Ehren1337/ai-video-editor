@@ -1,3 +1,4 @@
+import { CaptionGroupingControl } from "./CaptionGroupingControl.jsx";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 
@@ -1036,6 +1037,7 @@ function AssetRow({ asset, selected, t, downloadState }) {
 }
 
 export function ToolPanel(props) {
+  const [captionGrouping, setCaptionGrouping] = useState("phrases");
   const {
     activeTool,
     uiLanguage,
@@ -1464,12 +1466,14 @@ export function ToolPanel(props) {
           </span>
           {vocalSeparationJob.running ? <span className="inline-progress" aria-hidden="true"><span style={{ width: `${vocalSeparationJob.progress}%` }} /></span> : null}
         </button>
+        <CaptionGroupingControl value={captionGrouping} onChange={setCaptionGrouping} disabled={isGeneratingCaptions} t={t} />
         <button
           className="audio-entry-card caption-entry-card"
           type="button"
           disabled={!selectedAudioToolTarget || isGeneratingCaptions}
           onClick={() => selectedAudioToolTarget && generateCaptionsFromSourceAudio({
             blob: selectedAudioToolTarget.blob,
+            grouping: captionGrouping,
             start: selectedAudioToolTarget.start,
             sourceStart: selectedAudioToolTarget.sourceStart,
             duration: selectedAudioToolTarget.duration,

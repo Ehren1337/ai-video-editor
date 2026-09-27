@@ -296,6 +296,8 @@ export function createAudioTrackActions(d) {
         rememberedVoiceEnd ? rememberedVoiceEnd + DEFAULT_GENERATED_VOICE_GAP : 0,
         getGeneratedVoiceAppendStart(d.audioSegmentsRef?.current ?? d.audioSegments, d.currentTimeRef.current),
       );
+    const gap = Number.isFinite(options.gapSeconds)
+      ? Math.max(0, Math.min(DEFAULT_GENERATED_VOICE_GAP, options.gapSeconds)) : DEFAULT_GENERATED_VOICE_GAP;
     const created = [];
     for (let index = 0; index < decodedItems.length; index += 1) {
       const item = decodedItems[index];
@@ -315,9 +317,9 @@ export function createAudioTrackActions(d) {
         cloneVoiceProfileName: options.cloneVoiceProfileName || "",
       });
       created.push({ ...item, audioSegment: segment });
-      cursor = segment.start + segment.duration + DEFAULT_GENERATED_VOICE_GAP;
+      cursor = segment.start + segment.duration + gap;
     }
-    const finalEnd = Math.max(0, cursor - DEFAULT_GENERATED_VOICE_GAP);
+    const finalEnd = Math.max(0, cursor - gap);
     if (!captionSegment && d.generatedVoiceEndRef) d.generatedVoiceEndRef.current = finalEnd;
 
     const generatedCaptions = created.map((item, index) => {
@@ -327,6 +329,7 @@ export function createAudioTrackActions(d) {
       return {
         ...template,
         text: item.script,
+        timingSource: "tts-phrase",
         audioSegmentId: "",
         detachedAudioSegmentId: item.audioSegment.id,
         start: item.audioSegment.start,
